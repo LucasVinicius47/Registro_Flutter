@@ -13,14 +13,14 @@ class MyApp extends StatelessWidget {
       title: 'Registro App',
       theme: ThemeData(
         primarySwatch: Colors.blue,
-        fontFamily: 'CustomFont', // fonte
+        fontFamily: 'CustomFont', // Fonte global
       ),
       home: const RegisterScreen(), // Tela de registro como inicial
     );
   }
 }
 
-// armazenamento de dados
+// Simular armazenamento de dados
 String? registeredUsername;
 String? registeredPassword;
 
@@ -84,7 +84,7 @@ class _LoginScreenState extends State<LoginForms> {
       const SnackBar(content: Text('Login realizado com sucesso!')),
     );
 
-    // Ir para a tela principal
+    // Navegar para a tela principal
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
@@ -143,9 +143,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _confirmPasswordController = TextEditingController();
   bool _isPasswordVisible = false;
   bool _isLoading = false;
+  bool _termsAccepted = false; // Estado do checkbox
 
   void _register() {
     if (_formKey.currentState!.validate()) {
+      if (!_termsAccepted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Você deve aceitar os termos de uso para continuar.')),
+        );
+        return;
+      }
+
       setState(() {
         _isLoading = true;
       });
@@ -166,7 +174,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
         );
 
-        // Ir para a tela de login
+        // Navegar para a tela de login
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
@@ -274,6 +282,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       return null;
                     },
                   ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Checkbox(
+                        value: _termsAccepted,
+                        onChanged: (value) {
+                          setState(() {
+                            _termsAccepted = value!;
+                          });
+                        },
+                      ),
+                      const Expanded(
+                        child: Text('Aceito os termos de uso'),
+                      ),
+                    ],
+                  ),
                   const SizedBox(height: 20),
                   _isLoading
                       ? const CircularProgressIndicator()
@@ -281,17 +305,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           onPressed: _register,
                           child: const Text('Registrar'),
                         ),
-                  const SizedBox(height: 10),
-                  TextButton(
-                    onPressed: () {
-                      // Ir para a tela de login
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (context) => const LoginForms()),
-                      );
-                    },
-                    child: const Text('Já possui uma conta? Faça login'),
-                  ),
                 ],
               ),
             ),
@@ -320,6 +333,18 @@ class HomeScreen extends StatelessWidget {
             Text(
               'Seja Bem Vindo, $username!',
               style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                // Voltar para a tela de registro
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => const RegisterScreen()),
+                  (route) => false, // Remove todas as rotas anteriores
+                );
+              },
+              child: const Text('Voltar para Registro'),
             ),
           ],
         ),
